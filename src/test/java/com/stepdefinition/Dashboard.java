@@ -176,7 +176,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
         scriptElement.click();
 
         WebElement element2 = driver.findElement(By.xpath("(//div[@class='g_item']//child::div)[1]"));
-        JavascriptExecutor js = (JavascriptExecutor) driver;
+        // js already declared above
         js.executeScript("arguments[0].scrollIntoView();", element2);
     }
 
@@ -800,7 +800,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
 
                  WebElement data = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[contains(text(),'Price Information')]")));
 
-                 JavascriptExecutor js = (JavascriptExecutor) driver;
+                 // js already declared above
                  js.executeScript("window.scrollBy(0,500);");
                  js.executeScript("arguments[0].scrollIntoView(true);", data);
 
@@ -832,7 +832,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
 
                  WebElement data = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[contains(text(),'Price Information')]")));
 
-                 JavascriptExecutor js = (JavascriptExecutor) driver;
+                 // js already declared above
                  js.executeScript("window.scrollBy(0,500);");
                  js.executeScript("arguments[0].scrollIntoView(true);", data);
 

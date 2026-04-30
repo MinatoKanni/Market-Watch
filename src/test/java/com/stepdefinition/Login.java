@@ -2216,7 +2216,7 @@ public void user_click_the_search_box() throws InterruptedException {
 			
 			WebElement element = driver.findElement(By.xpath("(//span[contains(text(),'"+string+"')]//parent::div//parent::div//child::span[text()='"+string2+"'])[1]"));
 			Actions ac1 = new Actions(driver);
-			JavascriptExecutor js = (JavascriptExecutor) driver;
+			// js already declared above
 		       js.executeScript("arguments[0].scrollIntoView();", element);
 
 
