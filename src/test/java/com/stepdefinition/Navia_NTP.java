@@ -1374,9 +1374,21 @@ Thread.sleep(2000);
 					
 					Thread.sleep(2000);
 
-					driver.findElement(By.xpath("//input[@id='project-id']")).click();
-					Thread.sleep(1000);
-					driver.findElement(By.xpath("//input[@id='project-id']")).sendKeys("Nifty");
+					// Switch to default content first
+driver.switchTo().defaultContent();
+Thread.sleep(1000);
+
+JavascriptExecutor js = (JavascriptExecutor) driver;
+WebElement searchInput = driver.findElement(By.xpath("//input[@id='project-id']"));
+
+// ✅ JS Click — bypasses interactability issue
+js.executeScript("arguments[0].scrollIntoView(true);", searchInput);
+js.executeScript("arguments[0].click();", searchInput);
+Thread.sleep(1000);
+
+// JS sendKeys for reliable input
+js.executeScript("arguments[0].value='';", searchInput);  // clear first
+searchInput.sendKeys("Nifty");
 					Thread.sleep(2000);
 
 					try {
@@ -2027,9 +2039,21 @@ Thread.sleep(2000);
 				
 				Thread.sleep(2000);
 
-				driver.findElement(By.xpath("//input[@id='project-id']")).click();
-				Thread.sleep(1000);
-				driver.findElement(By.xpath("//input[@id='project-id']")).sendKeys("Nifty");
+				// Switch to default content first
+driver.switchTo().defaultContent();
+Thread.sleep(1000);
+
+JavascriptExecutor js = (JavascriptExecutor) driver;
+WebElement searchInput = driver.findElement(By.xpath("//input[@id='project-id']"));
+
+// ✅ JS Click — bypasses interactability issue
+js.executeScript("arguments[0].scrollIntoView(true);", searchInput);
+js.executeScript("arguments[0].click();", searchInput);
+Thread.sleep(1000);
+
+// JS sendKeys for reliable input
+js.executeScript("arguments[0].value='';", searchInput);  // clear first
+searchInput.sendKeys("Nifty");
 				Thread.sleep(2000);
 
 				try {
@@ -2108,7 +2132,7 @@ Thread.sleep(2000);
 				Thread.sleep(1000);
 				
 				WebElement element = driver.findElement(By.xpath("//p[text()='Margin needed']"));
-				JavascriptExecutor js = (JavascriptExecutor) driver;
+				// js already declared above
 			       js.executeScript("arguments[0].scrollIntoView();", element);
 			       
 			       Thread.sleep(1000);
@@ -2173,7 +2197,7 @@ Thread.sleep(2000);
 					Thread.sleep(1000);
 					
 					WebElement element = driver.findElement(By.xpath("//p[text()='Margin needed']"));
-					JavascriptExecutor js = (JavascriptExecutor) driver;
+					// js already declared above
 				       js.executeScript("arguments[0].scrollIntoView();", element);
 				       
 				       Thread.sleep(1000);
@@ -2275,9 +2299,21 @@ Thread.sleep(2000);
 				
 				Thread.sleep(2000);
 
-				driver.findElement(By.xpath("//input[@id='project-id']")).click();
-				Thread.sleep(1000);
-				driver.findElement(By.xpath("//input[@id='project-id']")).sendKeys("Nifty");
+				// Switch to default content first
+driver.switchTo().defaultContent();
+Thread.sleep(1000);
+
+// js already declared above
+WebElement searchInput = driver.findElement(By.xpath("//input[@id='project-id']"));
+
+// ✅ JS Click — bypasses interactability issue
+js.executeScript("arguments[0].scrollIntoView(true);", searchInput);
+js.executeScript("arguments[0].click();", searchInput);
+Thread.sleep(1000);
+
+// JS sendKeys for reliable input
+js.executeScript("arguments[0].value='';", searchInput);  // clear first
+searchInput.sendKeys("Nifty");
 				Thread.sleep(2000);
 
 try {
@@ -2331,7 +2367,7 @@ try {
 				Thread.sleep(1000);
 				
 				WebElement tfg = driver.findElement(By.xpath("//p[text()='Margin needed']"));
-				JavascriptExecutor js = (JavascriptExecutor) driver;
+				// js already declared above
 			       js.executeScript("arguments[0].scrollIntoView();", tfg);
 			       
 			       Thread.sleep(1000);
@@ -2396,7 +2432,7 @@ System.out.println("SELL Margin Value : "+sell);
 					Thread.sleep(1000);
 					
 					WebElement dfgs = driver.findElement(By.xpath("//p[text()='Margin needed']"));
-					JavascriptExecutor js = (JavascriptExecutor) driver;
+					// js already declared above
 				       js.executeScript("arguments[0].scrollIntoView();", dfgs);
 				       
 				       Thread.sleep(1000);
@@ -2965,9 +3001,21 @@ System.out.println("SELL Margin Value : "+sell);
 					
 					Thread.sleep(2000);
 
-					driver.findElement(By.xpath("//input[@id='project-id']")).click();
-					Thread.sleep(1000);
-					driver.findElement(By.xpath("//input[@id='project-id']")).sendKeys("Nifty");
+					// Switch to default content first
+driver.switchTo().defaultContent();
+Thread.sleep(1000);
+
+JavascriptExecutor js = (JavascriptExecutor) driver;
+WebElement searchInput = driver.findElement(By.xpath("//input[@id='project-id']"));
+
+// ✅ JS Click — bypasses interactability issue
+js.executeScript("arguments[0].scrollIntoView(true);", searchInput);
+js.executeScript("arguments[0].click();", searchInput);
+Thread.sleep(1000);
+
+// JS sendKeys for reliable input
+js.executeScript("arguments[0].value='';", searchInput);  // clear first
+searchInput.sendKeys("Nifty");
 					Thread.sleep(2000);
 
 					try {
@@ -3210,9 +3258,21 @@ System.out.println("SELL Margin Value : "+sell);
 					
 					Thread.sleep(2000);
 
-					driver.findElement(By.xpath("//input[@id='project-id']")).click();
-					Thread.sleep(1000);
-					driver.findElement(By.xpath("//input[@id='project-id']")).sendKeys("Nifty");
+					// Switch to default content first
+driver.switchTo().defaultContent();
+Thread.sleep(1000);
+
+// js already declared above
+WebElement searchInput = driver.findElement(By.xpath("//input[@id='project-id']"));
+
+// ✅ JS Click — bypasses interactability issue
+js.executeScript("arguments[0].scrollIntoView(true);", searchInput);
+js.executeScript("arguments[0].click();", searchInput);
+Thread.sleep(1000);
+
+// JS sendKeys for reliable input
+js.executeScript("arguments[0].value='';", searchInput);  // clear first
+searchInput.sendKeys("Nifty");
 					Thread.sleep(2000);
 
 					try {
@@ -3286,7 +3346,7 @@ System.out.println("SELL Margin Value : "+sell);
 					
 					Thread.sleep(1000);
 					WebElement element7 = driver.findElement(By.xpath("//span[contains(text(),'"+roundedValues+"')]//preceding-sibling::span"));
-					JavascriptExecutor js = (JavascriptExecutor) driver;
+					// js already declared above
 				       js.executeScript("arguments[0].scrollIntoView();", element7);
 				       
 				       Thread.sleep(1000);
@@ -3364,7 +3424,7 @@ System.out.println("SELL Margin Value : "+sell);
 						
 						Thread.sleep(1000);
 						WebElement element7 = driver.findElement(By.xpath("//span[contains(text(),'"+roundedValues+"')]//preceding-sibling::span"));
-						JavascriptExecutor js = (JavascriptExecutor) driver;
+						// js already declared above
 					       js.executeScript("arguments[0].scrollIntoView();", element7);
 					       
 					       Thread.sleep(1000);

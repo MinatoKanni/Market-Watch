@@ -232,23 +232,38 @@ public class Login extends BaseClass {
 	}
 
 	@When("User click the search box")
-	public void user_click_the_search_box() throws InterruptedException {
-		Thread.sleep(4000);
-
-		// FIX: //input[@id='project-id'] is inside //iframe[@class='iframe_window'].
-		// Clicking it directly from the default context causes ElementNotInteractableException
-		// because Selenium cannot interact with elements inside an iframe without switching first.
-		// Pattern adopted from the working Navia_Mutual_Funds project.
-		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
-		WebElement iframe = wait.until(ExpectedConditions.presenceOfElementLocated(
-				By.xpath("//iframe[@class='iframe_window']")));
-		driver.switchTo().frame(iframe);
-
-		wait.until(ExpectedConditions.elementToBeClickable(
-				By.xpath("//input[@id='project-id']"))).click();
-
-		Thread.sleep(3000);
-	}
+public void user_click_the_search_box() throws InterruptedException {
+    Thread.sleep(2000);
+    
+    // Always switch back to main page first before finding search box
+    driver.switchTo().defaultContent();
+    
+    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+    JavascriptExecutor js = (JavascriptExecutor) driver;
+    
+    // Check if iframe exists — if yes switch into it, if no use default context
+    boolean iframeExists = false;
+    try {
+        WebElement iframe = driver.findElement(By.xpath("//iframe[@class='iframe_window']"));
+        driver.switchTo().frame(iframe);
+        iframeExists = true;
+        System.out.println("[INFO] Switched into iframe_window");
+    } catch (Exception e) {
+        System.out.println("[INFO] iframe_window not found - using default context");
+        driver.switchTo().defaultContent();
+    }
+    
+    // Wait for search box to be present
+    WebElement searchBox = wait.until(ExpectedConditions.presenceOfElementLocated(
+            By.xpath("//input[@id='project-id']")));
+    
+    // ✅ JS Click — fixes ElementNotInteractableException
+    js.executeScript("arguments[0].scrollIntoView(true);", searchBox);
+    js.executeScript("arguments[0].click();", searchBox);
+    
+    System.out.println("[INFO] Search box clicked successfully");
+    Thread.sleep(2000);
+}
 
 	@When("User Search any {string} Script")
 	public void user_search_any_script(String string) throws InterruptedException {
