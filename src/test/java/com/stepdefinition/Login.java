@@ -233,36 +233,22 @@ public class Login extends BaseClass {
 
 	@When("User click the search box")
 public void user_click_the_search_box() throws InterruptedException {
-    Thread.sleep(2000);
-    
-    // Always switch back to main page first before finding search box
+    // Always reset to main page context first
     driver.switchTo().defaultContent();
-    
-    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+    Thread.sleep(2000);
+
     JavascriptExecutor js = (JavascriptExecutor) driver;
-    
-    // Check if iframe exists — if yes switch into it, if no use default context
-    boolean iframeExists = false;
-    try {
-        WebElement iframe = driver.findElement(By.xpath("//iframe[@class='iframe_window']"));
-        driver.switchTo().frame(iframe);
-        iframeExists = true;
-        System.out.println("[INFO] Switched into iframe_window");
-    } catch (Exception e) {
-        System.out.println("[INFO] iframe_window not found - using default context");
-        driver.switchTo().defaultContent();
-    }
-    
-    // Wait for search box to be present
+    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+
+    // search box is in main DOM - div.search_sys > input#project-id
     WebElement searchBox = wait.until(ExpectedConditions.presenceOfElementLocated(
             By.xpath("//input[@id='project-id']")));
-    
-    // ✅ JS Click — fixes ElementNotInteractableException
+
     js.executeScript("arguments[0].scrollIntoView(true);", searchBox);
     js.executeScript("arguments[0].click();", searchBox);
-    
+
     System.out.println("[INFO] Search box clicked successfully");
-    Thread.sleep(2000);
+    Thread.sleep(1000);
 }
 
 	@When("User Search any {string} Script")

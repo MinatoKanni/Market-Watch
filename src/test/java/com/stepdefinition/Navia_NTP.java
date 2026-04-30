@@ -1387,8 +1387,13 @@ js.executeScript("arguments[0].click();", searchInput);
 Thread.sleep(1000);
 
 // JS sendKeys for reliable input
-js.executeScript("arguments[0].value='';", searchInput);  // clear first
-searchInput.sendKeys("Nifty");
+js.executeScript("arguments[0].value='';", searchInput); // clear first
+// Use JS to set value instead of sendKeys — avoids ElementNotInteractableException
+js.executeScript("arguments[0].value=arguments[1];", searchInput, "Nifty");
+// Trigger input event so page recognizes the typed value
+js.executeScript("arguments[0].dispatchEvent(new Event('input', { bubbles: true }));", searchInput);
+js.executeScript("arguments[0].dispatchEvent(new Event('keyup', { bubbles: true }));", searchInput);
+Thread.sleep(2000);
 					Thread.sleep(2000);
 
 					try {
