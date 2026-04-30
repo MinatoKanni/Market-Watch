@@ -235,7 +235,18 @@ public class Login extends BaseClass {
 	public void user_click_the_search_box() throws InterruptedException {
 		Thread.sleep(4000);
 
-		 driver.findElement(By.xpath("//input[@id='project-id']")).click();
+		// FIX: //input[@id='project-id'] is inside //iframe[@class='iframe_window'].
+		// Clicking it directly from the default context causes ElementNotInteractableException
+		// because Selenium cannot interact with elements inside an iframe without switching first.
+		// Pattern adopted from the working Navia_Mutual_Funds project.
+		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+		WebElement iframe = wait.until(ExpectedConditions.presenceOfElementLocated(
+				By.xpath("//iframe[@class='iframe_window']")));
+		driver.switchTo().frame(iframe);
+
+		wait.until(ExpectedConditions.elementToBeClickable(
+				By.xpath("//input[@id='project-id']"))).click();
+
 		Thread.sleep(3000);
 	}
 
