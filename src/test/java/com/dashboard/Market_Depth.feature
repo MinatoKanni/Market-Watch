@@ -15,7 +15,7 @@ Feature: Navia the Application
    
 Scenario: User Verify The Market Depth - Stock - functionality
 
-When Navigate To Home Page
+When Navigate To Home Pages
 And User click the search box
 And User Search any "RELIANCE-A" Script by "BSE"
 And User Navigate The "BSE" and "RELIANCE INDUSTRIES LTD" Stock 
@@ -31,7 +31,7 @@ Then User Close The Current Window
 
 Scenario: User Verify The Market Depth - Stock - functionality
 
-When Navigate To Home Page
+When Navigate To Home Pages
 And User click the search box
 And User Search any "BEL-EQ" Script by "NSE"
 And User Navigate The "NSE" and "BEL" Stock 
@@ -50,7 +50,7 @@ Then  Next Page Shown
 
 Scenario: User Verify The Market Depth - Feature - functionality
 
-When Navigate To Home Page
+When Navigate To Home Pages
 And User click the search box
 And User Search any "CRUDEOIL" Script by "MCX"
 And User Navigate The "MCX" and "CRUDEOIL" Stock 
@@ -63,7 +63,7 @@ Then User Close The Current Window
 
 Scenario: User Verify The Market Depth - Stock - functionality
 
-When Navigate To Home Page
+When Navigate To Home Pages
 And User Open The Current "Nifty 50" Stike 
 And User Verify The "NFO" Market Depth Options "Today Open" Value
 And User Verify The "NFO" Market Depth Options "Yesterday close" Value

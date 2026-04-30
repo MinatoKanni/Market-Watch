@@ -30,7 +30,10 @@ import com.baseclass.BaseClass;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
-public class Navia_Login extends BaseClass {	
+public class Navia_Login extends BaseClass {
+
+
+	
 
 	@When("User Click The Collections Options {string} button")
 	public void user_click_the_collections_options_button(String string) throws InterruptedException {

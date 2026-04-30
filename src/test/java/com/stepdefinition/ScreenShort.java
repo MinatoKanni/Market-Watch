@@ -104,7 +104,11 @@ public class ScreenShort extends BaseClass {
 
 	    
 	    
-	    
+	    @When("Navigate To Home Pages")
+	    public void navigate_to_home_pages() {
+	    	 driver.get("https://web.navia.co.in/index.php");
+		        waitForPageReady();
+	    }
 	    
 	    
 

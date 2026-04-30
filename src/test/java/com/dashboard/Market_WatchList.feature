@@ -13,7 +13,7 @@ Feature: Price Alert the Application
     
 Scenario: User Check Default MarketWatch List View functionality
 
-When Navigate To Home Page
+When Navigate To Home Pages
 And User Check The "NIFTY" Default MarketWatch "NSE" List
 And User Check The "SENSEX" Default MarketWatch "BSE" List
 And User Check The "BANKNIFTY" Default MarketWatch "NSE" List
