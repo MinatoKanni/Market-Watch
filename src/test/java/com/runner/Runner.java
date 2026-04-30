@@ -11,7 +11,7 @@ import com.baseclass.BaseClass;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-    features = "src/test/java/com/dashboard/Market_Depth.feature",
+    features = "src/test/java/com/dashboard/DailyEightFortyTesting.feature",
     glue = {"com.stepdefinition"},
     plugin = {
         "pretty",
