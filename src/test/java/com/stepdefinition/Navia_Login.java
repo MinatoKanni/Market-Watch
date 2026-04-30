@@ -30,21 +30,7 @@ import com.baseclass.BaseClass;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
-public class Navia_Login extends BaseClass {
-
-	@When("Navigate to home page")
-	public void navigate_to_home_page() throws InterruptedException {
-
-//		Thread.sleep(2000);
-//		driver.navigate().to("https://rocket.tradeplusonline.com/index.php");
-//		Thread.sleep(2000);
-		
-		Thread.sleep(2000);
-		driver.navigate().to("https://web.navia.co.in/login.php");
-		Thread.sleep(2000);
-		
-	}
-	
+public class Navia_Login extends BaseClass {	
 
 	@When("User Click The Collections Options {string} button")
 	public void user_click_the_collections_options_button(String string) throws InterruptedException {
