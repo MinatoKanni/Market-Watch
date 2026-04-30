@@ -5,45 +5,30 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>EightFourthFive_Testing</groupId>
-    <artifactId>EightFourthFive_Testing</artifactId>
+    <groupId>com.navia</groupId>
+    <artifactId>Navia_Mutual_Funds</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
+    <name>Navia Automation Framework</name>
+
+    <!-- ✅ Java Version -->
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <cucumber.version>7.15.0</cucumber.version>
+        <selenium.version>4.14.1</selenium.version>
+        <testng.version>7.10.2</testng.version>
     </properties>
 
+    <!-- ✅ Dependencies -->
     <dependencies>
-
-        <!-- JUnit -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Cucumber -->
-        <dependency>
-            <groupId>io.cucumber</groupId>
-            <artifactId>cucumber-java</artifactId>
-            <version>7.15.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.cucumber</groupId>
-            <artifactId>cucumber-junit</artifactId>
-            <version>7.15.0</version>
-            <scope>test</scope>
-        </dependency>
 
         <!-- Selenium -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
-            <version>4.14.1</version>
+            <version>${selenium.version}</version>
         </dependency>
 
         <!-- WebDriver Manager -->
@@ -53,29 +38,51 @@
             <version>5.7.0</version>
         </dependency>
 
-        <!-- Extent Reports -->
+        <!-- Cucumber Java -->
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-java</artifactId>
+            <version>${cucumber.version}</version>
+        </dependency>
+
+        <!-- Cucumber TestNG -->
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-testng</artifactId>
+            <version>${cucumber.version}</version>
+        </dependency>
+
+        <!-- TestNG -->
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>${testng.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Extent Report (Optional) -->
         <dependency>
             <groupId>tech.grasshopper</groupId>
             <artifactId>extentreports-cucumber7-adapter</artifactId>
             <version>1.10.1</version>
         </dependency>
 
-        <!-- Lombok -->
+        <!-- Lombok (Optional) -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.32</version>
+            <version>1.18.30</version>
             <scope>provided</scope>
         </dependency>
 
     </dependencies>
 
+    <!-- ✅ Build Plugins -->
     <build>
         <plugins>
 
             <!-- Compiler Plugin -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
@@ -84,11 +91,16 @@
                 </configuration>
             </plugin>
 
-            <!-- Surefire Plugin (for tests) -->
+            <!-- Surefire Plugin (Run Tests) -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
+                <configuration>
+                    <suiteXmlFiles>
+                        <!-- Optional: if using testng.xml -->
+                        <!-- <suiteXmlFile>testng.xml</suiteXmlFile> -->
+                    </suiteXmlFiles>
+                </configuration>
             </plugin>
 
         </plugins>
