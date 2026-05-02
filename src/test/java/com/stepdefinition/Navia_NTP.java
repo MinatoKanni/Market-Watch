@@ -3125,6 +3125,8 @@ searchInput.sendKeys("Nifty");
 				      c.moveToElement(element7).perform();
 				      Thread.sleep(1000);
 				      c.click(element7).perform();
+				      Thread.sleep(1000);
+				      c.doubleClick(element7).perform();
 				       
 				      Thread.sleep(3000);
 				      
@@ -3358,6 +3360,8 @@ searchInput.sendKeys("Nifty");
 				      c.moveToElement(element7).perform();
 				      Thread.sleep(1000);
 				      c.click(element7).perform();
+				      Thread.sleep(1000);
+				      c.doubleClick(element7).perform();
 				       
 				      Thread.sleep(3000);
 				      
@@ -3436,6 +3440,8 @@ searchInput.sendKeys("Nifty");
 					      c.moveToElement(element7).perform();
 					      Thread.sleep(1000);
 					      c.click(element7).perform();
+					      Thread.sleep(1000);
+					      c.doubleClick(element7).perform();
 					       
 					      Thread.sleep(3000);
 					      

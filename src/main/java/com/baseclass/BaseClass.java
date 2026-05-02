@@ -46,29 +46,43 @@ public class BaseClass {
 
 	            ChromeOptions options = new ChromeOptions();
 
-	            // Auto-detect CI/Jenkins environment and run headless
-	            boolean isCI = System.getenv("CI") != null
+	            boolean isHeadless = Boolean.parseBoolean(System.getProperty("headless", "false"))
+	                    || "true".equalsIgnoreCase(System.getenv("HEADLESS"))
+	                    || System.getenv("CI") != null
 	                    || System.getenv("JENKINS_HOME") != null
 	                    || System.getenv("JENKINS_URL") != null;
 
-	            if (isCI) {
-	                System.out.println("[INFO] CI/Jenkins environment detected - launching Chrome in HEADLESS mode.");
+	            if (isHeadless) {
+	                System.out.println("[INFO] Launching Chrome in HEADLESS mode.");
 	                options.addArguments("--headless=new");
 	                options.addArguments("--no-sandbox");
 	                options.addArguments("--disable-dev-shm-usage");
 	                options.addArguments("--disable-gpu");
 	                options.addArguments("--window-size=1920,1080");
 	                options.addArguments("--remote-allow-origins=*");
+	                options.addArguments("--disable-http2");
+	                options.addArguments("--disable-blink-features=AutomationControlled");
+	                options.addArguments("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36");
 	            } else {
 	                System.out.println("[INFO] Local environment detected - launching Chrome in HEADED mode.");
 	            }
 
 	            options.addArguments("--disable-notifications");
 	            driver = new ChromeDriver(options);
+	        } else {
+	            throw new IllegalArgumentException("Unsupported browser: " + browser);
 	        }
 
 	        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-	        driver.manage().window().maximize();
+	        if (Boolean.parseBoolean(System.getProperty("headless", "false"))
+	                || "true".equalsIgnoreCase(System.getenv("HEADLESS"))
+	                || System.getenv("CI") != null
+	                || System.getenv("JENKINS_HOME") != null
+	                || System.getenv("JENKINS_URL") != null) {
+	            driver.manage().window().setSize(new org.openqa.selenium.Dimension(1920, 1080));
+	        } else {
+	            driver.manage().window().maximize();
+	        }
 
 	        return driver;
 	    }

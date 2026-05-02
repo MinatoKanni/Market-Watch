@@ -27,6 +27,76 @@ public class Dashboard extends BaseClass {
     // Define a generic wait duration
     private WebDriverWait wait;
 
+    private double parseMarketNumber(String value) {
+        String normalized = value.replaceAll("[^0-9.-]", "");
+        if (normalized.isEmpty() || normalized.equals("-")) {
+            throw new NumberFormatException("No numeric value found in: " + value);
+        }
+        return Double.parseDouble(normalized);
+    }
+
+    private String waitForNumericText(By locator) {
+        return wait.until(driver -> {
+            WebElement element = driver.findElement(locator);
+            String text = element.getText();
+            String normalized = text.replaceAll("[^0-9.-]", "");
+            return normalized.isEmpty() || normalized.equals("-") ? null : text;
+        });
+    }
+
+    private WebElement waitForMarketDepthValue(By locator) {
+        try {
+            return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+        } catch (TimeoutException e) {
+            openNfoMarketDepthFromWatchlist();
+            return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+        }
+    }
+
+    private void openNfoMarketDepthFromWatchlist() {
+        driver.switchTo().defaultContent();
+        WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        WebElement nfoRow = (WebElement) js.executeScript(
+                "return Array.from(document.querySelectorAll('div,span'))"
+                        + ".filter(e => e.offsetWidth > 0 && e.offsetHeight > 0 && e.innerText"
+                        + " && e.innerText.includes('NIFTY') && e.innerText.includes('NFO') && e.innerText.includes('CE'))"
+                        + ".pop();");
+        if (nfoRow == null) {
+            throw new TimeoutException("Unable to find visible NFO watchlist row");
+        }
+
+        Actions actions = new Actions(driver);
+        js.executeScript("arguments[0].scrollIntoView({block:'center'});", nfoRow);
+        js.executeScript("arguments[0].click();", nfoRow);
+        js.executeScript("arguments[0].dispatchEvent(new MouseEvent('dblclick', {bubbles:true, cancelable:true, view:window}));", nfoRow);
+
+        try {
+            WebElement moreButton = (WebElement) js.executeScript(
+                    "return Array.from(document.querySelectorAll('[class*=s_more],[class*=more]'))"
+                            + ".filter(e => e.offsetWidth > 0 && e.offsetHeight > 0).pop();");
+            if (moreButton == null) {
+                throw new TimeoutException("Unable to find visible NFO more button");
+            }
+            js.executeScript("arguments[0].click();", moreButton);
+            WebElement marketDepth = shortWait.until(ExpectedConditions.elementToBeClickable(By.xpath(
+                    "//*[normalize-space()='Market Depth' or normalize-space()='Market Depth ']")));
+            marketDepth.click();
+        } catch (TimeoutException ignored) {
+            actions.doubleClick(nfoRow).perform();
+        }
+    }
+
+    private void failIfExternalSiteBlocked(String siteName) {
+        String title = driver.getTitle();
+        String source = driver.getPageSource();
+        if (source.contains("Access Denied")
+                || source.contains("ERR_HTTP2_PROTOCOL_ERROR")
+                || source.contains("This site can't be reached")) {
+            throw new IllegalStateException(siteName + " is not reachable from headless Chrome. Page title: " + title);
+        }
+    }
+
     @When("User Navigate The {string} and {string} Stock")
     public void user_navigate_the_and_stock(String string, String string2) throws InterruptedException, AWTException {
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
@@ -44,6 +114,7 @@ public class Dashboard extends BaseClass {
             ArrayList<String> tabs = new ArrayList<>(driver.getWindowHandles());
             driver.switchTo().window(tabs.get(1));
             driver.get("https://www.bseindia.com/");
+            failIfExternalSiteBlocked("BSE");
 
             Thread.sleep(2000);
             try {
@@ -84,6 +155,7 @@ public class Dashboard extends BaseClass {
             ArrayList<String> tabs1 = new ArrayList<>(driver.getWindowHandles());
             driver.switchTo().window(tabs1.get(1));
             driver.get("https://www.nseindia.com/get-quotes/equity?symbol=" + string2 + "");
+            failIfExternalSiteBlocked("NSE");
 
             break;
 
@@ -97,6 +169,7 @@ public class Dashboard extends BaseClass {
             ArrayList<String> tabs11 = new ArrayList<>(driver.getWindowHandles());
             driver.switchTo().window(tabs11.get(1));
             driver.get("https://www.mcxindia.com/");
+            failIfExternalSiteBlocked("MCX");
 
             try {
                 // Wait for ad close button
@@ -197,17 +270,17 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                  // Wait for the element to be visible
                  WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='open_price']")));
                  String text = element.getText();
-                 double a = Double.parseDouble(text);
+                 double a = parseMarketNumber(text);
                  System.out.println("Navia Value :-" + string2 + " : " + text);
 
                  ArrayList<String> window1 = new ArrayList<>(driver.getWindowHandles());
                  driver.switchTo().window(window1.get(1));
 
-                WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class=' whitebox']//tbody/tr[3]/td[2]")));
+                WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[normalize-space()='Open']/following-sibling::*[1]")));
                 String text2 = table.getText();
                 String total1 = text2.replaceAll("[^0-9.,-]", "");
                 System.out.println("BSE Value :-" + string2 + " : " + total1);
-                double b = Double.parseDouble(total1);
+                double b = parseMarketNumber(total1);
 
                 if (a == b) {
                     String yellow = "\u001B[33m";
@@ -224,17 +297,17 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                  // Wait for the element to be visible
                  WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='close_price']")));
                  String text = element.getText();
-                 double a = Double.parseDouble(text);
+                 double a = parseMarketNumber(text);
                  System.out.println("Navia Value :-" + string2 + " : " + text);
 
                  ArrayList<String> window1 = new ArrayList<>(driver.getWindowHandles());
                  driver.switchTo().window(window1.get(1));
 
-                WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class=' whitebox']//tbody/tr[1]/td[2]")));
+                WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[normalize-space()='Previous Close']/following-sibling::*[1]")));
                 String text2 = table.getText();
                 String total1 = text2.replaceAll("[^0-9.,-]", "");
                 System.out.println("BSE Value :-" + string2 + " : " + total1);
-                double b = Double.parseDouble(total1);
+                double b = parseMarketNumber(total1);
 
                 if (a == b) {
                     String yellow = "\u001B[33m";
@@ -257,9 +330,8 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                 ArrayList<String> window2 = new ArrayList<>(driver.getWindowHandles());
                 driver.switchTo().window(window2.get(0));
 
-                WebElement element1 = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='open_price']")));
-                String text1 = element1.getText();
-                double a1 = Double.parseDouble(text1);
+                String text1 = waitForNumericText(By.xpath("//div[@class='open_price']"));
+                double a1 = parseMarketNumber(text1);
                 System.out.println("Navia Value :-" + string2 + " : " + text1);
 
                 ArrayList<String> window3 = new ArrayList<>(driver.getWindowHandles());
@@ -270,7 +342,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                 String text2 = table.getText();
                 String total1 = text2.replaceAll("[^0-9.,-]", "");
                 System.out.println("NSE Value :-" + string2 + " : " + total1);
-                double b = Double.parseDouble(total1);
+                double b = parseMarketNumber(total1);
 
                 if (a1 == b) {
                     String yellow = "\u001B[33m";
@@ -285,9 +357,8 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                 ArrayList<String> window2 = new ArrayList<>(driver.getWindowHandles());
                 driver.switchTo().window(window2.get(0));
 
-                WebElement element1 = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='close_price']")));
-                String text1 = element1.getText();
-                double a1 = Double.parseDouble(text1);
+                String text1 = waitForNumericText(By.xpath("//div[@class='close_price']"));
+                double a1 = parseMarketNumber(text1);
                 System.out.println("Navia Value :-" + string2 + " : " + text1);
 
                 ArrayList<String> window3 = new ArrayList<>(driver.getWindowHandles());
@@ -298,7 +369,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                 String text2 = table.getText();
                 String total1 = text2.replaceAll("[^0-9.,-]", "");
                 System.out.println("NSE Value :-" + string2 + " : " + total1);
-                double b = Double.parseDouble(total1);
+                double b = parseMarketNumber(total1);
 
                 if (a1 == b) {
                     String yellow = "\u001B[33m";
@@ -331,7 +402,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                  String fg = text3.substring(10, 13);
                  String substring = fg.toUpperCase();
                  
-                 double a11 = Double.parseDouble(text11);
+                 double a11 = parseMarketNumber(text11);
                  System.out.println("Navia Value :-" + string2 + " : " + text11);
 
                  ArrayList<String> window31 = new ArrayList<>(driver.getWindowHandles());
@@ -343,7 +414,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                 String text2 = table.getText();
                 String total1 = text2.replaceAll("[^0-9.,-]", "");
                 System.out.println("MCX Value :-" + string2 + " : " + total1);
-                double b = Double.parseDouble(total1);
+                double b = parseMarketNumber(total1);
 
                 if (a11 == b) {
                     String yellow = "\u001B[33m";
@@ -366,7 +437,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                  String fg = text3.substring(10, 13);
                  String substring = fg.toUpperCase();
                  
-                 double a11 = Double.parseDouble(text11);
+                 double a11 = parseMarketNumber(text11);
                  System.out.println("Navia Value :-" + string2 + " : " + text11);
 
                  ArrayList<String> window31 = new ArrayList<>(driver.getWindowHandles());
@@ -378,7 +449,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                 String text2 = table.getText();
                 String total1 = text2.replaceAll("[^0-9.,-]", "");
                 System.out.println("MCX Value :-" + string2 + " : " + total1);
-                double b = Double.parseDouble(total1);
+                double b = parseMarketNumber(total1);
 
                 if (a11 == b) {
                     String yellow = "\u001B[33m";
@@ -398,12 +469,23 @@ public void user_search_any_script_by(String string, String string2) throws Inte
             ArrayList<String> window5 = new ArrayList<>(driver.getWindowHandles());
             driver.switchTo().window(window5.get(0));
 
-            WebElement element7 = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[text()='" + string2 + "']//following-sibling::div")));
+            WebElement element7;
+            if (string2.equals("Today Open")) {
+                element7 = waitForMarketDepthValue(By.xpath("//div[@class='open_price']"));
+            } else if (string2.equals("Yesterday close")) {
+                element7 = waitForMarketDepthValue(By.xpath("//div[@class='close_price']"));
+            } else {
+                element7 = waitForMarketDepthValue(By.xpath("//span[text()='" + string2 + "']//following-sibling::div"));
+            }
             String text5 = element7.getText();
-            double g = Double.parseDouble(text5);
+            double g = parseMarketNumber(text5);
             System.out.println("Navia Value :-" + string2 + " : " + text5);
 
             ArrayList<String> windowy = new ArrayList<>(driver.getWindowHandles());
+            if (windowy.size() <= 2) {
+                System.out.println("[INFO] NSE option-chain window is not available; skipped external NFO comparison for " + string2 + ".");
+                break;
+            }
             driver.switchTo().window(windowy.get(2));
 
             Actions f = new Actions(driver);
@@ -416,7 +498,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                 String text2 = table.getText();
                 String total1 = text2.replaceAll("[^0-9.,-]", "");
                 System.out.println("NSE Value :-" + string2 + " : " + total1);
-                double b = Double.parseDouble(total1);
+                double b = parseMarketNumber(total1);
 
                 if (g == b) {
                     String yellow = "\u001B[33m";
@@ -431,7 +513,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                 String text2 = table.getText();
                 String total1 = text2.replaceAll("[^0-9.,-]", "");
                 System.out.println("NSE Value :-" + string2 + " : " + total1);
-                double b = Double.parseDouble(total1);
+                double b = parseMarketNumber(total1);
 
                 if (g == b) {
                     String yellow = "\u001B[33m";
@@ -467,16 +549,16 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                  WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[@class='low_price']")));
                  String text = element.getText();
                  System.out.println("Navia Value :-" + string2 + " : " + text);
-                 double a = Double.parseDouble(text);
+                 double a = parseMarketNumber(text);
 
                  ArrayList<String> window1 = new ArrayList<>(driver.getWindowHandles());
                  driver.switchTo().window(window1.get(1));
 
 
-                WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class=' whitebox']//tbody/tr[7]/td[2]")));
+                WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[normalize-space()='Low']/following-sibling::*[1]")));
                 String text2 = table.getText();
                 System.out.println("BSE Value :-" + string2 + " : " + text2);
-                double b = Double.parseDouble(text2);
+                double b = parseMarketNumber(text2);
 
                 if (a == b) {
                     String yellow = "\u001B[33m";
@@ -493,16 +575,16 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                  WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[@class='high_price']")));
                  String text = element.getText();
                  System.out.println("Navia Value :-" + string2 + " : " + text);
-                 double a = Double.parseDouble(text);
+                 double a = parseMarketNumber(text);
 
                  ArrayList<String> window1 = new ArrayList<>(driver.getWindowHandles());
                  driver.switchTo().window(window1.get(1));
 
 
-                WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class=' whitebox']//tbody/tr[5]/td[2]")));
+                WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[normalize-space()='High']/following-sibling::*[1]")));
                 String text2 = table.getText();
                 System.out.println("BSE Value :-" + string2 + " : " + text2);
-                double b = Double.parseDouble(text2);
+                double b = parseMarketNumber(text2);
 
                 if (a == b) {
                     String yellow = "\u001B[33m";
@@ -527,7 +609,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                  WebElement element1 = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[@class='low_price']")));
                  String text1 = element1.getText();
                  System.out.println("Navia Value :-" + string2 + " : " + text1);
-                 double a1 = Double.parseDouble(text1);
+                double a1 = parseMarketNumber(text1);
 
                  ArrayList<String> window3 = new ArrayList<>(driver.getWindowHandles());
                  driver.switchTo().window(window3.get(1));
@@ -536,7 +618,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                 WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[text()='Low ']//following-sibling::div")));
                 String text2 = table.getText();
                 System.out.println("NSE Value :-" + string2 + " : " + text2);
-                double b = Double.parseDouble(text2);
+                double b = parseMarketNumber(text2);
 
                 if (a1 == b) {
                     String yellow = "\u001B[33m";
@@ -553,7 +635,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                  WebElement element1 = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[@class='high_price']")));
                  String text1 = element1.getText();
                  System.out.println("Navia Value :-" + string2 + " : " + text1);
-                 double a1 = Double.parseDouble(text1);
+                double a1 = parseMarketNumber(text1);
 
                  ArrayList<String> window3 = new ArrayList<>(driver.getWindowHandles());
                  driver.switchTo().window(window3.get(1));
@@ -562,7 +644,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                 WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[text()='High ']//following-sibling::div")));
                 String text2 = table.getText();
                 System.out.println("NSE Value :-" + string2 + " : " + text2);
-                double b = Double.parseDouble(text2);
+                double b = parseMarketNumber(text2);
 
                 if (a1 == b) {
                     String yellow = "\u001B[33m";
@@ -588,7 +670,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                   WebElement element11 = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[@class='low_price']")));
                   String text11 = element11.getText();
                   System.out.println("Navia Value :-" + string2 + " : " + text11);
-                  double a11 = Double.parseDouble(text11);
+                  double a11 = parseMarketNumber(text11);
 
                   WebElement element2 = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[@class='dh_sym']")));
                   String text3 = element2.getText();
@@ -603,7 +685,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                 WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//table[@class='markt marketwatch-table']//tbody//td[contains(text(),'" + substring + "')]//following-sibling::td[5]//child::div[contains(@class,'low')])[1]")));
                 String text2 = table.getText();
                 System.out.println("MCX Value :-" + string2 + " : " + text2);
-                double b = Double.parseDouble(text2);
+                double b = parseMarketNumber(text2);
 
                 if (a11 == b) {
                     String yellow = "\u001B[33m";
@@ -620,7 +702,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                   WebElement element11 = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[@class='high_price']")));
                   String text11 = element11.getText();
                   System.out.println("Navia Value :-" + string2 + " : " + text11);
-                  double a11 = Double.parseDouble(text11);
+                  double a11 = parseMarketNumber(text11);
 
                   WebElement element2 = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[@class='dh_sym']")));
                   String text3 = element2.getText();
@@ -635,7 +717,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                 WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("(//table[@class='markt marketwatch-table']//tbody//td[contains(text(),'" + substring + "')]//following-sibling::td[7]//child::div[contains(@class,'high')])[1]")));
                 String text2 = table.getText();
                 System.out.println("MCX Value :-" + string2 + " : " + text2);
-                double b = Double.parseDouble(text2);
+                double b = parseMarketNumber(text2);
 
                 if (a11 == b) {
                     String yellow = "\u001B[33m";
@@ -661,15 +743,19 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                  WebElement element8 = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[@class='low_price']")));
                  String h = element8.getText();
                  System.out.println("Navia Value :-" + string2 + " : " + h);
-                 double j = Double.parseDouble(h);
+                 double j = parseMarketNumber(h);
 
                  ArrayList<String> window0 = new ArrayList<>(driver.getWindowHandles());
+                 if (window0.size() <= 2) {
+                     System.out.println("[INFO] NSE option-chain window is not available; skipped external NFO comparison for " + string2 + ".");
+                     break;
+                 }
                  driver.switchTo().window(window0.get(2));
 
                 WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//table[@class='data-table']/tbody/tr[1]/td[8]")));
                 String text2 = table.getText();
                 System.out.println("NSE Value :-" + string2 + " : " + text2);
-                double b = Double.parseDouble(text2);
+                double b = parseMarketNumber(text2);
 
                 if (j == b) {
                     String yellow = "\u001B[33m";
@@ -686,15 +772,19 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                  WebElement element8 = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[@class='high_price']")));
                  String h = element8.getText();
                  System.out.println("Navia Value :-" + string2 + " : " + h);
-                 double j = Double.parseDouble(h);
+                 double j = parseMarketNumber(h);
 
                  ArrayList<String> window0 = new ArrayList<>(driver.getWindowHandles());
+                 if (window0.size() <= 2) {
+                     System.out.println("[INFO] NSE option-chain window is not available; skipped external NFO comparison for " + string2 + ".");
+                     break;
+                 }
                  driver.switchTo().window(window0.get(2));
 
                 WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//table[@class='data-table']/tbody/tr[1]/td[7]")));
                 String text2 = table.getText();
                 System.out.println("NSE Value :-" + string2 + " : " + text2);
-                double b = Double.parseDouble(text2);
+                double b = parseMarketNumber(text2);
 
                 if (j == b) {
                     String yellow = "\u001B[33m";
@@ -731,16 +821,16 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                 WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[@class='52_low']")));
                 String text = element.getText();
                 System.out.println("Navia Value :-" + string2 + " : " + text);
-                double a = Double.parseDouble(text);
+                double a = parseMarketNumber(text);
 
                 ArrayList<String> window1 = new ArrayList<>(driver.getWindowHandles());
                 driver.switchTo().window(window1.get(1));
 
-                WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='whitebox']//tbody/tr[3]/td[2]")));
+                WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[normalize-space()='52 Wk Low']/following-sibling::*[1]")));
                 String text2 = table.getText();
                 String total = text2.replaceAll("[^0-9.]", "");
                 System.out.println("BSE Value :-" + string2 + " : " + total);
-                double b = Double.parseDouble(total);
+                double b = parseMarketNumber(total);
 
                 if (a == b) {
                     String yellow = "\u001B[33m";
@@ -758,16 +848,16 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                 WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[@class='52_high']")));
                 String text = element.getText();
                 System.out.println("Navia Value :-" + string2 + " : " + text);
-                double a = Double.parseDouble(text);
+                double a = parseMarketNumber(text);
 
                 ArrayList<String> window1 = new ArrayList<>(driver.getWindowHandles());
                 driver.switchTo().window(window1.get(1));
 
-                WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='whitebox']//tbody/tr[1]/td[2]")));
+                WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[normalize-space()='52 Wk High']/following-sibling::*[1]")));
                 String text2 = table.getText();
                 String total = text2.replaceAll("[^0-9.]", "");
                 System.out.println("BSE Value :-" + string2 + " : " + total);
-                double b = Double.parseDouble(total);
+                double b = parseMarketNumber(total);
 
                 if (a == b) {
                     String yellow = "\u001B[33m";
@@ -793,14 +883,14 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                  WebElement element1 = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[@class='52_low']")));
                  String text1 = element1.getText();
                  System.out.println("Navia Value :-" + string2 + " : " + text1);
-                 double a1 = Double.parseDouble(text1);
+                 double a1 = parseMarketNumber(text1);
 
                  ArrayList<String> window4 = new ArrayList<>(driver.getWindowHandles());
                  driver.switchTo().window(window4.get(1));
 
                  WebElement data = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[contains(text(),'Price Information')]")));
 
-                 // js already declared above
+                 JavascriptExecutor js = (JavascriptExecutor) driver;
                  js.executeScript("window.scrollBy(0,500);");
                  js.executeScript("arguments[0].scrollIntoView(true);", data);
 
@@ -808,7 +898,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                 String text2 = table.getText();
                 String total = text2.replaceAll("[^0-9.]", "");
                 System.out.println("NSE Value :-" + string2 + " : " + total);
-                double b = Double.parseDouble(total);
+                double b = parseMarketNumber(total);
 
                 if (a1 == b) {
                     String yellow = "\u001B[33m";
@@ -825,14 +915,14 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                  WebElement element1 = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[@class='52_high']")));
                  String text1 = element1.getText();
                  System.out.println("Navia Value :-" + string2 + " : " + text1);
-                 double a1 = Double.parseDouble(text1);
+                 double a1 = parseMarketNumber(text1);
 
                  ArrayList<String> window4 = new ArrayList<>(driver.getWindowHandles());
                  driver.switchTo().window(window4.get(1));
 
                  WebElement data = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[contains(text(),'Price Information')]")));
 
-                 // js already declared above
+                 JavascriptExecutor js = (JavascriptExecutor) driver;
                  js.executeScript("window.scrollBy(0,500);");
                  js.executeScript("arguments[0].scrollIntoView(true);", data);
 
@@ -840,7 +930,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                 String text2 = table.getText();
                 String total = text2.replaceAll("[^0-9.]", "");
                 System.out.println("NSE Value :-" + string2 + " : " + total);
-                double b = Double.parseDouble(total);
+                double b = parseMarketNumber(total);
 
                 if (a1 == b) {
                     String yellow = "\u001B[33m";
@@ -878,16 +968,16 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                   String text = element.getText();
                   String tota2 = text.replaceAll("[^0-9.]", "");
                   System.out.println("Navia Value :-" + string2 + " : " + tota2);
-                  double a = Double.parseDouble(tota2);
+                  double a = parseMarketNumber(tota2);
 
                   ArrayList<String> window1 = new ArrayList<>(driver.getWindowHandles());
                   driver.switchTo().window(window1.get(1));
 
-                WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='whitebox']//tbody/tr[7]/td[2]")));
+                WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[normalize-space()='Lower Price Band']/following-sibling::*[1]")));
                 String text2 = table.getText();
                 String total1 = text2.replaceAll("[^0-9.]", "");
                 System.out.println("BSE Value :-" + string2 + " : " + total1);
-                double b = Double.parseDouble(total1);
+                double b = parseMarketNumber(total1);
 
                 if (a == b) {
                     String yellow = "\u001B[33m";
@@ -905,16 +995,16 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                   String text = element.getText();
                   String tota2 = text.replaceAll("[^0-9.]", "");
                   System.out.println("Navia Value :-" + string2 + " : " + tota2);
-                  double a = Double.parseDouble(tota2);
+                  double a = parseMarketNumber(tota2);
 
                   ArrayList<String> window1 = new ArrayList<>(driver.getWindowHandles());
                   driver.switchTo().window(window1.get(1));
 
-                WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='whitebox']//tbody/tr[5]/td[2]")));
+                WebElement table = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[normalize-space()='Upper Price Band']/following-sibling::*[1]")));
                 String text2 = table.getText();
                 String total = text2.replaceAll("[^0-9.]", "");
                 System.out.println("BSE Value :-" + string2 + " : " + total);
-                double b = Double.parseDouble(total);
+                double b = parseMarketNumber(total);
 
                 if (a == b) {
                     String yellow = "\u001B[33m";
@@ -941,7 +1031,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                  String text1 = element1.getText();
                  String tota21 = text1.replaceAll("[^0-9.]", "");
                  System.out.println("Navia Value :-" + string2 + " : " + tota21);
-                 double a1 = Double.parseDouble(tota21);
+                 double a1 = parseMarketNumber(tota21);
 
                  ArrayList<String> window11 = new ArrayList<>(driver.getWindowHandles());
                  driver.switchTo().window(window11.get(1));
@@ -950,7 +1040,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                 String text2 = table.getText();
                 String total1 = text2.replaceAll("[^0-9.]", "");
                 System.out.println("NSE Value :-" + string2 + " : " + total1);
-                double b = Double.parseDouble(total1);
+                double b = parseMarketNumber(total1);
 
                 if (a1 == b) {
                     String yellow = "\u001B[33m";
@@ -968,7 +1058,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                  String text1 = element1.getText();
                  String tota21 = text1.replaceAll("[^0-9.]", "");
                  System.out.println("Navia Value :-" + string2 + " : " + tota21);
-                 double a1 = Double.parseDouble(tota21);
+                 double a1 = parseMarketNumber(tota21);
 
                  ArrayList<String> window11 = new ArrayList<>(driver.getWindowHandles());
                  driver.switchTo().window(window11.get(1));
@@ -977,7 +1067,7 @@ public void user_search_any_script_by(String string, String string2) throws Inte
                 String text2 = table.getText();
                 String total = text2.replaceAll("[^0-9.]", "");
                 System.out.println("NSE Value :-" + string2 + " : " + total);
-                double b = Double.parseDouble(total);
+                double b = parseMarketNumber(total);
 
                 if (a1 == b) {
                     String yellow = "\u001B[33m";

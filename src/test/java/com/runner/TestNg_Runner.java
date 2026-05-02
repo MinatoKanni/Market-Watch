@@ -1,18 +1,12 @@
 package com.runner;
 
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
 
 import com.baseclass.BaseClass;
 
-import io.cucumber.junit.Cucumber;
-import io.cucumber.junit.CucumberOptions;
 import io.cucumber.testng.AbstractTestNGCucumberTests;
 
-
-
-@io.cucumber.testng.CucumberOptions(features="C:\\Users\\Venkateshwaran\\git\\repository\\EightFourthFive_Testing\\src\\test\\java\\com\\feature\\Daily_EightFourthFive_Testing_Login_Payin_Payout_AddAndDeleteScrip_AmoOrderPlacingModfication_CancelAndPlacedAmoOrder.feature",
+@io.cucumber.testng.CucumberOptions(features="src/test/java/com/dashboard/Market_Depth.feature",
                   glue ={"com.stepdefinition"} , 
                 //  tags="@sipOrder",
                   plugin = {"pretty",
@@ -29,6 +23,11 @@ public class TestNg_Runner extends AbstractTestNGCucumberTests{
 	public static void browserLaunch(){
 		
 		driver=BaseClass.launchBrowser("chrome");
+	}
+
+	@org.testng.annotations.AfterClass
+	public static void afterSuite() {
+		BaseClass.quitBrowser();
 	}
 
 }
