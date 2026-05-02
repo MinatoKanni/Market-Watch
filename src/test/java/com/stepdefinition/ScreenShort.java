@@ -96,19 +96,19 @@ public class ScreenShort extends BaseClass {
 	        }
 	    }
 	    
-	    @When("Navigate to home page")
-	    public void navigate_to_home_page() {
-	        driver.get("https://web.navia.co.in/index.php");
-	        waitForPageReady();
-	    }
+	   @When("Navigate to home page")
+public void navigate_to_home_page() {
+    driver.switchTo().defaultContent(); // ✅ Add this line
+    driver.get("https://web.navia.co.in/index.php");
+    waitForPageReady();
+}
 
-	    
-	    
-	    @When("Navigate To Home Pages")
-	    public void navigate_to_home_pages() {
-	    	 driver.get("https://web.navia.co.in/index.php");
-		        waitForPageReady();
-	    }
+@When("Navigate To Home Pages")
+public void navigate_to_home_pages() {
+    driver.switchTo().defaultContent(); // ✅ Add this line
+    driver.get("https://web.navia.co.in/index.php");
+    waitForPageReady();
+}
 	    
 	    
 

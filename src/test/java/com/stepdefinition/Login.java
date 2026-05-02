@@ -232,23 +232,24 @@ public class Login extends BaseClass {
 	}
 
 	@When("User click the search box")
-	public void user_click_the_search_box() throws InterruptedException {
-		Thread.sleep(4000);
+public void user_click_the_search_box() throws InterruptedException {
+    // Always reset to main page context first
+    driver.switchTo().defaultContent();
+    Thread.sleep(2000);
 
-		// FIX: //input[@id='project-id'] is inside //iframe[@class='iframe_window'].
-		// Clicking it directly from the default context causes ElementNotInteractableException
-		// because Selenium cannot interact with elements inside an iframe without switching first.
-		// Pattern adopted from the working Navia_Mutual_Funds project.
-		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
-		WebElement iframe = wait.until(ExpectedConditions.presenceOfElementLocated(
-				By.xpath("//iframe[@class='iframe_window']")));
-		driver.switchTo().frame(iframe);
+    JavascriptExecutor js = (JavascriptExecutor) driver;
+    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
 
-		wait.until(ExpectedConditions.elementToBeClickable(
-				By.xpath("//input[@id='project-id']"))).click();
+    // search box is in main DOM - div.search_sys > input#project-id
+    WebElement searchBox = wait.until(ExpectedConditions.presenceOfElementLocated(
+            By.xpath("//input[@id='project-id']")));
 
-		Thread.sleep(3000);
-	}
+    js.executeScript("arguments[0].scrollIntoView(true);", searchBox);
+    js.executeScript("arguments[0].click();", searchBox);
+
+    System.out.println("[INFO] Search box clicked successfully");
+    Thread.sleep(1000);
+}
 
 	@When("User Search any {string} Script")
 	public void user_search_any_script(String string) throws InterruptedException {
@@ -2215,7 +2216,7 @@ public class Login extends BaseClass {
 			
 			WebElement element = driver.findElement(By.xpath("(//span[contains(text(),'"+string+"')]//parent::div//parent::div//child::span[text()='"+string2+"'])[1]"));
 			Actions ac1 = new Actions(driver);
-			JavascriptExecutor js = (JavascriptExecutor) driver;
+			// js already declared above
 		       js.executeScript("arguments[0].scrollIntoView();", element);
 
 

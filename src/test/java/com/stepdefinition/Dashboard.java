@@ -133,13 +133,29 @@ public class Dashboard extends BaseClass {
         }
     }
 
-    @When("User Search any {string} Script by {string}")
-    public void user_search_any_script_by(String string, String string2) throws InterruptedException {
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+  @When("User Search any {string} Script by {string}")
+public void user_search_any_script_by(String string, String string2) throws InterruptedException {
+    driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+    
+    // Always switch to main page — search box is in main DOM, not in iframe
+    driver.switchTo().defaultContent();
+    Thread.sleep(1000);
+    
+    wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+    JavascriptExecutor js = (JavascriptExecutor) driver;
 
-        WebElement inputId = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@id='project-id']")));
-        inputId.sendKeys(string);
+    // Wait for search box to be present in DOM
+    WebElement inputId = wait.until(ExpectedConditions.presenceOfElementLocated(
+            By.xpath("//input[@id='project-id']")));
+
+    // JS click + JS sendKeys — bypasses all interactability issues
+    js.executeScript("arguments[0].scrollIntoView(true);", inputId);
+    js.executeScript("arguments[0].click();", inputId);
+    Thread.sleep(500);
+    js.executeScript("arguments[0].value='';", inputId); // clear first
+    inputId.sendKeys(string); // type the script name
+    
+    System.out.println("[INFO] Searched for: " + string + " on " + string2);
 
         if (string2.equals("MCX")) {
         	
@@ -160,7 +176,7 @@ public class Dashboard extends BaseClass {
         scriptElement.click();
 
         WebElement element2 = driver.findElement(By.xpath("(//div[@class='g_item']//child::div)[1]"));
-        JavascriptExecutor js = (JavascriptExecutor) driver;
+        // js already declared above
         js.executeScript("arguments[0].scrollIntoView();", element2);
     }
 
@@ -784,7 +800,7 @@ public class Dashboard extends BaseClass {
 
                  WebElement data = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[contains(text(),'Price Information')]")));
 
-                 JavascriptExecutor js = (JavascriptExecutor) driver;
+                 // js already declared above
                  js.executeScript("window.scrollBy(0,500);");
                  js.executeScript("arguments[0].scrollIntoView(true);", data);
 
@@ -816,7 +832,7 @@ public class Dashboard extends BaseClass {
 
                  WebElement data = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[contains(text(),'Price Information')]")));
 
-                 JavascriptExecutor js = (JavascriptExecutor) driver;
+                 // js already declared above
                  js.executeScript("window.scrollBy(0,500);");
                  js.executeScript("arguments[0].scrollIntoView(true);", data);
 
