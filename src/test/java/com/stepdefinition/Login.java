@@ -6076,12 +6076,12 @@ public void user_navigate_to_navia_live() throws InterruptedException, AWTExcept
 
 	sleep(1000);
 
-	sendValues(l.getClientCode(), "63748379");
+	sendValues(l.getClientCode(), "82486527");
 
 	clickOnElement(l.getPassWord());
 	sleep(1000);
 
-	sendValues(l.getPassWord(), "Testing@321");
+	sendValues(l.getPassWord(), "Mynavia@123");
 	
 
 	clickOnElement(l.getCheckBox());
