@@ -127,7 +127,7 @@ public class Login_Page extends BaseClass {
 
         WebElement password = driver.findElement(By.name("lPassword"));
         password.clear();
-        password.sendKeys("Testing@123");
+        password.sendKeys("Navia@111");
     }
 
     private String fetchOtpFromYopmail(WebDriverWait wait) throws InterruptedException {
